@@ -1,0 +1,36 @@
+{
+  "name": "shopping-agent-mvp",
+  "version": "1.0.0",
+  "description": "An agentic shopping MVP that helps a user discover products, verify real offers, compare options, and complete a private payment flow on MagicBlock devnet with explicit user confirmation.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.80",
+    "@ai-sdk/react": "^3.0.197",
+    "ai": "^6.0.195",
+    "lucide-react": "^1.17.0",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "serpapi": "^2.2.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.7",
+    "typescript": "^6.0.3"
+  }
+}
