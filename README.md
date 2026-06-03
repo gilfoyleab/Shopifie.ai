@@ -1,279 +1,140 @@
-# Shopping Agent MVP
+# 🐦 Buybird
 
-An agentic shopping MVP that helps a user discover products, verify real offers, compare options, and complete a private payment flow on MagicBlock devnet with explicit user confirmation.
+**The future of E-commerce — a shopping agent.**
 
-## What We Are Building
+> Tell the agent what you want to shop for. It finds you the best deal, buys it for you, and pays privately on-chain — all in just one click.
 
-We are building a focused shopping assistant, not a fully autonomous buyer.
+Backed by **[MagicBlock](https://magicblock.gg)**.
 
-The MVP will:
-- Understand a user request in natural language
-- Search for relevant products
-- Verify product facts from evidence
-- Rank the best options
-- Show a clean shortlist in the UI
-- Create a checkout session
-- Run a private payment demo through MagicBlock / Mirage on devnet
-- Track the order state after payment
+---
 
-## Why We Are Building It
+## ✨ What is Buybird?
 
-The goal is to make shopping feel like a guided, trustworthy workflow instead of a black-box chatbot.
+Buybird is an AI-powered shopping agent that turns natural language into real purchases. Instead of browsing dozens of tabs and comparing prices yourself, you simply tell Buybird what you want — and it handles the rest.
 
-This MVP is designed to:
-- Reduce search friction
-- Surface better product choices
-- Keep the user in control before payment
-- Use MagicBlock for a private payment rail
-- Keep the system realistic and demoable on devnet
+**How it works:**
+1. 🗣️ **Say what you want** — "Find me a MacBook Air M1 under $500"
+2. 🔍 **Agent finds the best deals** — Searches across the web, verifies prices, and ranks the top options
+3. 🛒 **Buy in one click** — Select a product and pay privately on-chain through MagicBlock
 
-## MVP Scope
+No more endless browsing. No more price comparison tabs. Just tell Buybird, and it shops for you.
 
-### In Scope
-- One orchestration agent
-- Product discovery from the web or approved sources
-- Product verification and ranking
-- Stateful checkout sessions
-- Manual user confirmation before payment
-- MagicBlock / Mirage private payment flow on devnet
-- Basic order status tracking
+---
 
-### Out of Scope For v1
-- Fully autonomous buying without confirmation
-- Scraping the entire internet indiscriminately
-- Supporting every merchant on day one
-- Real-world merchant fulfillment across all stores
-- Complex multi-agent orchestration before the core flow works
+## 🚀 Features
 
-## Core User Flow
+- **Natural Language Shopping** — Chat with the agent like you'd chat with a friend
+- **Real-Time Product Discovery** — Searches Google Shopping via SerpAPI for live products and prices
+- **AI-Powered Recommendations** — Gemini-powered agent ranks and explains why each product is a good fit
+- **Beautiful Slider UI** — Premium horizontal card slider with "Buybird says..." AI insights
+- **Smart Revisions** — "Still looking?" cards let you refine by price, brand, or category in one tap
+- **Private On-Chain Payments** — MagicBlock / Mirage private payment flow on Solana devnet
 
-1. User types a shopping request.
-2. The agent rewrites the request into structured search constraints.
-3. The discovery layer finds candidate products.
-4. The verifier checks price, availability, seller, shipping, and return policy.
-5. The ranker sorts the best options.
-6. The UI shows a shortlist with evidence.
-7. The user selects one item and confirms purchase.
-8. The backend creates a checkout session.
-9. Mirage builds the private payment transaction flow.
-10. The wallet signs and the transaction is submitted on devnet.
-11. The app marks the order as paid and tracks status.
+---
 
-## System Architecture
+## 🛠️ Tech Stack
 
-### 1. Gemini Orchestrator
-The single agent that understands intent and coordinates tools.
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 15 (App Router), React, TypeScript |
+| **AI Agent** | Google Gemini 2.5 Flash via Vercel AI SDK |
+| **Product Data** | SerpAPI (Google Shopping) |
+| **Payments** | MagicBlock Private Payments on Solana Devnet |
+| **Styling** | Vanilla CSS with custom design system |
 
-Responsibilities:
-- Parse user requests
-- Ask for clarifications when needed
-- Choose which tools to call
-- Produce the final shortlist
-- Gate checkout behind explicit confirmation
+---
 
-### 2. Discovery Service
-Finds possible products from the web or approved product sources.
+## 📦 Getting Started
 
-Responsibilities:
-- Search candidates
-- Gather source URLs
-- Return raw product leads
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-### 3. Verification Service
-Turns product leads into trusted, evidence-backed offers.
+### Installation
 
-Responsibilities:
-- Read product pages
-- Extract price, shipping, availability, and returns
-- Attach evidence links
-- Detect stale or inconsistent information
-
-### 4. Normalization Layer
-Converts raw results into a strict schema.
-
-Suggested objects:
-- `Product`
-- `Offer`
-- `Seller`
-- `Shipping`
-- `ReturnPolicy`
-- `Evidence`
-- `CheckoutSession`
-
-### 5. Checkout Engine
-Manages state and prevents duplicate payment actions.
-
-Responsibilities:
-- Create checkout sessions
-- Store selected offers
-- Track payment state
-- Log all state transitions
-
-### 6. MagicBlock / Mirage Adapter
-Handles the private payment demo on devnet.
-
-Responsibilities:
-- Fund or prepare the wallet flow if needed
-- Build the payment transaction
-- Sign and submit through the wallet
-- Reconcile the payment with the checkout session
-
-### 7. Database
-Stores the app state.
-
-Suggested data:
-- User sessions
-- Search queries
-- Candidate offers
-- Selected product
-- Checkout sessions
-- Payment references
-- Audit log
-
-### 8. Frontend UI
-Presents the shopping flow clearly and keeps the user informed.
-
-Suggested screens:
-- Search
-- Product comparison
-- Checkout review
-- Payment status
-- Order history
-
-## Application Layout
-
-The MVP UI should have four major areas:
-
-### Search Panel
-- Natural language prompt box
-- Budget filters
-- Category filters
-- Shipping preference
-
-### Results Grid
-- Product cards
-- Evidence links
-- Price, seller, shipping, returns
-- Confidence score
-
-### Checkout Sidebar
-- Selected product summary
-- Total amount
-- Payment status
-- Confirm purchase button
-
-### Activity Timeline
-- Search started
-- Offers found
-- Offers verified
-- Item selected
-- Checkout created
-- Payment submitted
-- Order confirmed
-
-## MVP State Machine
-
-The app should behave as a stateful system.
-
-```text
-idle -> searching -> verifying -> ranking -> review -> checkout_ready -> payment_pending -> paid -> fulfilled
+```bash
+git clone https://github.com/shumhn/shopping-agent.git
+cd shopping-agent
+npm install
 ```
 
-Error states should be tracked too:
+### Environment Variables
 
-```text
-any_state -> error
+Create a `.env.local` file:
+
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+SERPAPI_API_KEY=your_serpapi_key
 ```
 
-## Recommended Tech Direction
+### Run
 
-### Frontend
-- Next.js (App Router)
-- TypeScript
-- `@solana/wallet-adapter-react` for wallet connection (required for MagicBlock auth)
-- A clean, responsive hybrid UI (chat-first with card results)
+```bash
+npm run dev
+```
 
-### Backend & Database
-- Node.js API routes for orchestration
-- **Database:** SQLite via Prisma (perfect for local MVP, easily portable)
-- Deterministic tool functions
+Open [http://localhost:3000](http://localhost:3000) and start shopping!
 
-### Agent
-- **Gemini as the main orchestrator** (using `gemini-2.5-flash` for fast function calling)
-- **Vercel AI SDK** (`ai`, `@ai-sdk/google`, `zod`) for agentic loops, streaming, and tool schemas
-- One agent first, not a multi-agent system
+---
 
-### Product Data Source
-- **MVP Phase 1:** Fake Store API (free, realistic JSON products)
-- **MVP Phase 2:** SerpAPI Google Shopping (for real-world data)
+## 🏗️ Architecture
 
-### Payments
-- **MagicBlock Private Payments API** (`https://payments.magicblock.app`)
-- Flow: Wallet challenge auth (`/v1/spl/challenge` -> `/v1/spl/login`) -> Deposit to Ephemeral Rollup -> Private Transfer
-- **RPCs:** Base Devnet + Ephemeral Rollup Devnet (`devnet-us.magicblock.app`)
+```
+User → Chat UI → Gemini Agent → Search Tool (SerpAPI) → Product Results
+                                                      → Slider UI
+                                                      → Checkout → MagicBlock Payment (devnet)
+```
 
-### Environment Variables Required
-- `GOOGLE_GENERATIVE_AI_API_KEY`
-- `NEXT_PUBLIC_ER_RPC_URL` (MagicBlock Ephemeral Rollup)
-- `NEXT_PUBLIC_TEE_RPC_URL` (MagicBlock TEE)
+### Core Components
 
-## Build Plan
+| Component | Description |
+|-----------|-------------|
+| `src/app/page.tsx` | Main chat interface with horizontal product slider |
+| `src/app/api/chat/route.ts` | AI chat API route with Gemini + tool calling |
+| `src/lib/tools/search.ts` | SerpAPI Google Shopping search tool |
+| `src/app/globals.css` | Full design system and slider styles |
+| `src/app/layout.tsx` | App layout and metadata |
 
-### Phase 1: Project Foundation
-- Create the app folder
-- Set up README and architecture docs
-- Initialize Next.js
-- Define the core data model
+---
 
-### Phase 2: Shopping Intelligence
-- Build search and discovery tools
-- Add verification and evidence capture
-- Add ranking logic
+## 🎨 UI Preview
 
-### Phase 3: Checkout Flow
-- Create stateful checkout sessions
-- Add user confirmation before payment
-- Add audit logging and idempotency
+The product results are displayed in a premium horizontal slider:
+- **Hero Cards** — Large product cards with images, prices, and AI insights
+- **"Buybird says..."** — AI-generated rationale for each recommendation
+- **Revisions Grid** — Quick-action cards to refine your search
+- **Visit Store** — Direct links to purchase from the retailer
 
-### Phase 4: MagicBlock Integration
-- Wire in Mirage private payments on devnet
-- Test wallet funding and transaction submission
-- Link payment references to checkout sessions
+---
 
-### Phase 5: Demo Hardening
-- Handle price changes
-- Handle missing stock
-- Handle payment failure
-- Improve loading states and empty states
+## 🗺️ Roadmap
 
-## Definition Of Done For MVP
+- [x] Natural language chat interface
+- [x] Gemini AI agent with tool calling
+- [x] Real-time Google Shopping search
+- [x] Horizontal slider product UI
+- [x] AI recommendation insights
+- [ ] Wallet connection (Solana)
+- [ ] MagicBlock private payment flow
+- [ ] Checkout session management
+- [ ] Order tracking
 
-The MVP is successful when:
-- A user can search for a product
-- The system shows verified results
-- The user can review and choose one
-- The checkout session is created
-- A private payment demo can be completed on devnet
-- The order state is visible and persistent
+---
 
-## Tracking Notes
+## 🤝 Built With
 
-Use this repository to track:
-- Product decisions
-- Architecture changes
-- API assumptions
-- MagicBlock integration steps
-- UI/UX flow changes
-- Open questions and risks
+- [MagicBlock](https://magicblock.gg) — Private on-chain payments
+- [Google Gemini](https://ai.google.dev) — AI agent backbone
+- [Vercel AI SDK](https://sdk.vercel.ai) — Streaming & tool calling
+- [SerpAPI](https://serpapi.com) — Real-time product search
+- [Next.js](https://nextjs.org) — React framework
 
-## Resolved Architecture Decisions
+---
 
-- **Product category for v1:** Electronics or general items via Fake Store API.
-- **Merchant source for v1:** Fake Store API for initial build, SerpAPI for final demo.
-- **Fulfillment:** Simulate only. We will mark as "fulfilled" locally; no real merchant integration for v1.
-- **Frontend layout:** Hybrid — natural language chat input at the top, visual product cards and checkout sidebar below.
-- **Payment flow:** Strictly MagicBlock devnet-only for the first release.
+## 📄 License
 
-## Next Step
+MIT
 
-The Next.js app has been initialized in this folder. The next step is to begin Phase 2: wiring up the Vercel AI SDK with Gemini, defining the product search tools, and building the conversational UI.
+---
+
+**Buybird** — _Shop smarter. Pay privately. One click._
