@@ -7,7 +7,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "simulate:bike": "tsx scripts/simulate-bike-checkout.ts",
+    "test:private-transfer": "tsx scripts/test-private-transfer-flow.ts",
+    "wallet:merchant": "tsx scripts/create-demo-merchant-wallet.ts",
+    "wallet:balances": "tsx scripts/check-devnet-wallet-balances.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +21,13 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
     "@ai-sdk/react": "^3.0.197",
+    "@solana/wallet-adapter-backpack": "^0.1.14",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-phantom": "^0.9.29",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/wallet-adapter-solflare": "^0.6.33",
+    "@solana/web3.js": "^1.98.4",
     "ai": "^6.0.195",
     "lucide-react": "^1.17.0",
     "next": "^16.2.7",
@@ -31,6 +43,8 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.7",
-    "typescript": "^6.0.3"
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }
