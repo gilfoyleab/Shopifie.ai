@@ -119,6 +119,13 @@ export const searchProductsTool = {
           delivery: item.delivery,
         }));
 
+        // Sort by price — cheapest first so "Best Pick" badge = best deal
+        products.sort((a: any, b: any) => {
+          const pa = a.extracted_price ?? Infinity;
+          const pb = b.extracted_price ?? Infinity;
+          return pa - pb;
+        });
+
         return { success: true, engine: "google_shopping", products };
       } else {
         // --- Regular Google Search Engine (works EVERYWHERE including Nepal) ---
@@ -215,6 +222,18 @@ export const searchProductsTool = {
         if (products.length === 0) {
           return { success: false, message: "No products found for this query in " + (location || "your area") + "." };
         }
+
+        // Sort by extracted price — cheapest first so "Best Pick" = best deal
+        products.sort((a: any, b: any) => {
+          const parsePrice = (p: any) => {
+            if (p.extracted_price && typeof p.extracted_price === 'number') return p.extracted_price;
+            const priceStr = String(p.price || '');
+            const nums = priceStr.replace(/[^\d.]/g, '');
+            const val = parseFloat(nums);
+            return isNaN(val) ? Infinity : val;
+          };
+          return parsePrice(a) - parsePrice(b);
+        });
 
         return { success: true, engine: "google", location: location, products };
       }

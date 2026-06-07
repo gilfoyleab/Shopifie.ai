@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import "@solana/wallet-adapter-react-ui/styles.css";
 import "./globals.css";
+import { SolanaProvider } from "@/components/solana-provider";
 
 export const metadata: Metadata = {
   title: "Buybird",
@@ -14,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SolanaProvider>{children}</SolanaProvider>
+      </body>
     </html>
   );
 }
