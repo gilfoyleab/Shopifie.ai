@@ -9,8 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/simple.min.css">
     <style>
       .reveal h1, .reveal h2, .reveal h3 { font-family: 'Inter', sans-serif; text-transform: none; color: #111; font-weight: 700; }
-      .reveal p, .reveal li { font-family: 'Inter', sans-serif; color: #333; }
-      .reveal blockquote { border-left: 4px solid #10B981; padding-left: 15px; font-style: italic; background: none; box-shadow: none; }
+      .reveal h1 { font-size: 2.2em; }
+      .reveal h2 { font-size: 1.6em; }
+      .reveal h3 { font-size: 1.2em; }
+      .reveal p, .reveal li { font-family: 'Inter', sans-serif; color: #333; font-size: 0.9em; line-height: 1.4; }
+      .reveal blockquote { border-left: 4px solid #10B981; padding-left: 15px; font-style: italic; background: none; box-shadow: none; font-size: 0.85em; }
       .reveal section img { border: none; box-shadow: none; }
     </style>
   </head>
@@ -111,7 +114,12 @@ We are starting with human consumers booking hotels, but the ultimate vision is 
         plugins: [ RevealMarkdown ],
         slideNumber: true,
         hash: true,
-        transition: 'slide'
+        transition: 'slide',
+        width: 1100,
+        height: 800,
+        margin: 0.1,
+        minScale: 0.2,
+        maxScale: 2.0
       });
     </script>
   </body>
