@@ -629,12 +629,7 @@ export default function Home() {
                 <span>Devnet Test Settlement</span>
                 <span>{getSettlementTotalLabel(checkoutSession)}</span>
               </div>
-              <p className="checkout-helper">
-                {checkoutSession?.note || "Buybird snapshots the live product first, then creates an internal demo checkout for devnet payment testing."}
-              </p>
-              <p className="checkout-helper">
-                This is not real mainnet USDC. It is devnet test USDC used to prove the payment flow safely.
-              </p>
+
 
               {checkoutSession && (
                 <>
