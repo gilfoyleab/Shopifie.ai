@@ -1,358 +1,276 @@
-# Buybird
+<p align="center">
+  <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" />
+  <img src="https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/AI-Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Payments-MagicBlock_TEE-10B981?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Status-Live_MVP-22c55e?style=for-the-badge" />
+</p>
 
-Buybird is a shopping agent that helps a user discover products, compare live offers, and complete a private payment flow on Solana devnet using MagicBlock.
+<h1 align="center">🐦 Buybird</h1>
 
-This repository is our MVP workspace. The goal is not to build a fully autonomous bot that buys anything from anywhere. The goal is to build a safe, convincing devnet demo of agentic shopping and agentic payments.
+<p align="center">
+  <strong>The Private Web3 Concierge — AI-Powered Shopping with TEE Escrow on Solana</strong>
+</p>
 
-## Locked MVP
+<p align="center">
+  <em>Frictionless AI Shopping · Zero Chargebacks · Total Privacy</em>
+</p>
 
-The MVP we are building is:
+<p align="center">
+  <a href="https://buybird.vercel.app">🌐 Live Demo</a> · 
+  <a href="https://buybird.vercel.app/pitch.html">📊 Pitch Deck</a> · 
+  <a href="https://github.com/shumhn/shopping-agent">📦 Source Code</a>
+</p>
 
-1. A user asks for a product in natural language.
-2. The agent finds live offers and ranks them.
-3. The user selects one item and clicks `Buy`.
-4. The backend creates a checkout session.
-5. The backend locks the item, amount, merchant target, and expiry.
-6. MagicBlock builds an unsigned private payment transaction.
-7. The user wallet signs the transaction.
-8. The transaction is submitted on devnet.
-9. The app marks the checkout as paid and shows status.
+---
 
-This is already a real agentic payment flow.
+## 🧠 What is Buybird?
 
-The autonomy is in:
-- product discovery
-- comparison
-- ranking
-- checkout orchestration
+Buybird is an **AI-powered shopping concierge** that finds products and books services from a curated partner network, then completes **private stablecoin payments** through **MagicBlock TEE (Trusted Execution Environment) escrow** on Solana.
 
-The final payment execution stays inside a controlled approval boundary.
+> **Think of it as:** Your personal AI shopper that pays in crypto — privately, securely, and with zero chargebacks.
 
-## Product Position
+Users simply chat with the Buybird AI, describe what they need, and the agent handles everything — from discovery to private checkout — all without exposing wallet addresses or transaction details on the public ledger.
 
-Buybird is not "AI that spends money on its own with no limits."
+---
 
-Buybird is:
-- an AI shopping assistant
-- a stateful checkout orchestrator
-- a private payment demo on MagicBlock devnet
+## 🔥 The Problem
 
-That framing is important because it keeps the MVP safe, explainable, and scalable.
+| Pain Point | Who It Hurts |
+|---|---|
+| **Privacy is dead** — Booking a hotel exposes your credit card, identity, and location to dozens of databases | Crypto users, high-net-worth individuals |
+| **AI agents hit walls** — Retailers block bots with captchas, giving AI your fiat card is a liability | AI-first shoppers, developers |
+| **Merchants suffer** — High chargeback rates and 3%+ card processing fees eat margins | Hotels, e-commerce, small businesses |
 
-## Goal Tracker
+> 💡 Crypto holders have billions in stablecoins but **no private, seamless way to spend them in the real world.**
 
-Use this section as the running scoreboard for the MVP. We will keep adding ticks here as endpoints and flows land.
+---
 
-### Core MVP Checklist
+## ✨ The Solution
 
-- [x] Product search from live data
-- [x] Gemini chat route with tool calling
-- [x] Product result cards with `Buy via Agent`
-- [x] Internal checkout session creation
-- [x] Checkout session retrieval endpoint
-- [x] Devnet Phantom wallet connection
-- [x] MagicBlock-shaped payment preparation endpoint
-- [x] Wallet signing of the prepared transaction
-- [x] Transaction submission endpoint
-- [x] Live `paid` state after devnet submission
-- [x] Order receipt endpoint
-- [x] Receiver token-account explorer link and balance display
-- [ ] Failed payment recovery and retry UX
-- [x] Backend test files for checkout flow
-- [x] Backend CLI simulation for devnet-style bike checkout
-- [x] Demo merchant wallet tooling
-- [x] Devnet wallet balance checker script
+Buybird connects crypto users with a **curated network of crypto-friendly merchants** through an AI concierge:
 
-### Endpoint Tracker
-
-- [x] `POST /api/chat`
-  Purpose: Gemini orchestration + search tool invocation
-- [x] `POST /api/checkout`
-  Purpose: create a locked internal checkout session from a selected live product
-- [x] `GET /api/checkout/[checkoutId]`
-  Purpose: retrieve a checkout session and current status
-- [x] `POST /api/checkout/[checkoutId]/prepare-payment`
-  Purpose: validate wallet + prepare a MagicBlock private-payment request for devnet
-- [x] `POST /api/checkout/[checkoutId]/submit-payment`
-  Purpose: accept a signed transaction or simulation mode and submit it
-- [x] `GET /api/checkout/[checkoutId]/receipt`
-  Purpose: return a payment receipt / order confirmation payload
-
-### Current Focus
-
-- [x] Search -> product selection
-- [x] Product selection -> checkout session
-- [x] Checkout session -> payment preparation
-- [x] Payment preparation -> Phantom signing
-- [x] Backend submission path -> paid state
-- [x] Paid state -> receipt payload
-- [x] Receipt payload -> correct receiver token-account explorer link
-
-## Current Stage
-
-We are currently in `Stage 3: Devnet Private Payment`, moving into hardening and explorer/receipt polish.
-
-What is already in the codebase:
-- Next.js app with App Router
-- chat-style shopping UI
-- Gemini-powered chat route
-- SerpAPI-based product search tool
-- result cards with product selection entry point
-- internal checkout session APIs
-- Phantom wallet integration on devnet
-- payment preparation flow for MagicBlock private transfers
-- Phantom signing and live devnet submission
-- receipt UI with transaction and receiver settlement links
-
-Current implementation files:
-- [src/app/page.tsx](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/page.tsx>)
-- [src/app/api/chat/route.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/api/chat/route.ts>)
-- [src/app/api/checkout/route.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/api/checkout/route.ts>)
-- [src/app/api/checkout/[checkoutId]/route.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/api/checkout/[checkoutId]/route.ts>)
-- [src/app/api/checkout/[checkoutId]/prepare-payment/route.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/api/checkout/[checkoutId]/prepare-payment/route.ts>)
-- [src/components/solana-provider.tsx](</Users/sumangiri/Desktop/shopping-agent-mvp/src/components/solana-provider.tsx>)
-- [src/lib/checkout/store.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/lib/checkout/store.ts>)
-- [src/lib/tools/search.ts](</Users/sumangiri/Desktop/shopping-agent-mvp/src/lib/tools/search.ts>)
-- [src/app/globals.css](</Users/sumangiri/Desktop/shopping-agent-mvp/src/app/globals.css>)
-
-What is not built yet:
-- failed payment retry / recovery UX
-- persistent storage beyond in-memory session state
-
-## Current Architecture
-
-### Frontend
-- Next.js
-- React
-- TypeScript
-- custom chat and product-card interface
-
-### Agent Layer
-- Gemini via Vercel AI SDK
-- tool calling from chat route
-
-### Product Data
-- SerpAPI
-- Google Shopping where supported
-- fallback Google result extraction for unsupported shopping regions
-
-### Payment Layer
-- current: MagicBlock-shaped payment preparation on Solana devnet
-- next: signed transaction submission and confirmation flow
-- later: Mirage-assisted execution and testing flow
-
-## Locked User Flow
-
-### Stage 1: Find
-The user describes what they want.
-
-Example:
-`Find me a MacBook Air under $700`
-
-The agent:
-- interprets the request
-- queries live shopping data
-- returns ranked product cards
-
-### Stage 2: Choose
-The user reviews the results and clicks `Buy via Agent` on one item.
-
-At this point, the selected product becomes the `checkout candidate`.
-
-### Stage 3: Checkout Session
-The backend creates a checkout session with:
-- `checkoutId`
-- selected product data
-- source link
-- displayed amount
-- payment mint
-- merchant destination or test receiver
-- expiry time
-- current status
-
-### Stage 4: Payment Preparation
-The backend calls MagicBlock to build a private payment transaction.
-
-The transaction should include:
-- amount
-- sender
-- destination
-- `clientRefId` or checkout reference
-- private visibility
-- devnet cluster settings
-
-### Stage 5: Signature
-The user wallet signs the unsigned transaction.
-
-The app does not let the model directly broadcast raw arbitrary values. The backend owns validation, and the wallet remains the final signer.
-
-### Stage 6: Submission
-The signed transaction is submitted on devnet.
-
-### Stage 7: Status
-The UI updates the checkout state:
-- `checkout_ready`
-- `payment_pending`
-- `paid`
-- `failed`
-
-## Target Architecture For Stage 2
-
-```text
-User
-  -> Chat UI
-  -> Gemini Agent
-  -> Search Tool
-  -> Ranked Product Results
-  -> Buy Click
-  -> Checkout Session API
-  -> MagicBlock Payment Builder
-  -> Wallet Signature
-  -> Devnet Submission
-  -> Payment Status UI
+```
+User Prompt → AI Search → Partner Results → USDC Payment → TEE Escrow → Private Settlement
 ```
 
-Core system pieces we need:
-- `shopping agent`
-- `search tool`
-- `checkout session service`
-- `payment adapter`
-- `wallet integration`
-- `order/payment state store`
+- **For Users:** Chat with the AI. It finds exactly what you need from our partner network.
+- **For Payments:** Pay in USDC. Funds are locked in a MagicBlock TEE Escrow.
+- **For Privacy:** Wallet addresses and transaction details remain entirely private from the public ledger.
+- **For Merchants:** Zero chargebacks, instant USDC settlement, simple onboarding.
 
-## Roadmap
+---
 
-### Stage 1: Product Discovery
-Status: `In progress / partially built`
+## 🏗️ Architecture
 
-Goals:
-- polished shopping chat
-- reliable product search
-- ranking logic
-- product selection flow
+```
+┌─────────────────────────────────────────────────────────┐
+│                      FRONTEND                           │
+│  Next.js 16 · React · TypeScript · Custom Chat UI       │
+│  Solana Wallet Adapter (Phantom / Backpack)              │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│                    AI AGENT LAYER                        │
+│  Google Gemini via Vercel AI SDK                         │
+│  Tool Calling: Product Search · Checkout Orchestration   │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│                   DATA & SEARCH                         │
+│  SerpAPI · Google Shopping · Live Price Extraction        │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│                  PAYMENT LAYER                          │
+│  MagicBlock TEE Escrow · Solana Devnet                   │
+│  Private Transfers · USDC Settlement                     │
+└─────────────────────────────────────────────────────────┘
+```
 
-### Stage 2: Agentic Checkout
-Status: `Built`
+---
 
-Goals:
-- replace pure outbound store flow with internal checkout flow
-- create checkout session object
-- attach selected product to session
-- show review state before payment
+## 🛒 How It Works
 
-### Stage 3: Devnet Private Payment
-Status: `In progress`
+### 1. 🔍 Discover
+The user describes what they want in natural language:
+> *"Find me a luxury hotel in Bali for next week"*
 
-Goals:
-- connect wallet
-- build MagicBlock private transfer request
-- sign and submit on devnet
-- show receipt and payment confirmation
+The AI agent searches the partner network and returns curated, ranked results.
 
-### Stage 4: Hardening
-Status: `Later`
+### 2. 🛍️ Select
+The user reviews product cards with real pricing and clicks **"Buy via Agent"** to initiate checkout.
 
-Goals:
-- idempotency
-- stale price protection
-- failed payment recovery
-- better source verification
-- order history and audit trail
+### 3. 🔒 Escrow
+The backend creates a checkout session and locks the item, amount, merchant destination, and expiry. MagicBlock builds an unsigned private payment transaction.
 
-## Coming Goals
+### 4. ✍️ Sign
+The user's wallet (Phantom/Backpack) signs the prepared transaction. The AI never has direct access to funds.
 
-The immediate goals from here are:
+### 5. 🔐 Private Settlement
+The signed transaction is submitted on Solana devnet. MagicBlock's TEE ensures the transfer is **completely private** — no wallet addresses or amounts visible on the public ledger.
 
-1. Sign the prepared transaction with Phantom.
-2. Connect Phantom signing output to the submit-payment endpoint.
-3. Confirm live devnet transaction success and move the checkout to `paid`.
-4. Show the receipt / payment success state in-app.
-5. Add retry handling for failed submissions.
+### 6. ✅ Receipt
+The app confirms payment with a full receipt including Solscan explorer links.
 
-## Definition Of Done For The MVP
+---
 
-We can call the MVP successful when:
-- a user can search for a product
-- the agent can return live product options
-- the user can select an item
-- the backend can create a checkout session
-- the app can prepare a MagicBlock private payment on devnet
-- the user wallet can sign it
-- the app can show `paid` status after submission
-
-## Out Of Scope For This MVP
-
-We are not trying to build:
-- full open-web autonomous purchasing
-- merchant fulfillment across arbitrary stores
-- invisible or automatic spending without approval
-- cross-chain payments
-- production mainnet settlement in v1
-
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
-| --- | --- |
-| Frontend | Next.js, React, TypeScript |
-| Agent | Gemini via Vercel AI SDK |
-| Search | SerpAPI |
-| Payments | MagicBlock Private Payments API |
-| Network | Solana devnet |
-| UI | Custom CSS |
+|---|---|
+| **Frontend** | Next.js 16, React, TypeScript |
+| **AI Engine** | Google Gemini via Vercel AI SDK |
+| **Search** | SerpAPI + Google Shopping |
+| **Wallet** | Solana Wallet Adapter (Phantom, Backpack) |
+| **Payments** | MagicBlock TEE Private Transfers |
+| **Network** | Solana Devnet |
+| **Deployment** | Vercel |
+| **Styling** | Custom CSS (no Tailwind) |
 
-## Local Development
+---
 
-Install dependencies:
+## 📡 API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/chat` | Gemini AI orchestration + search tool invocation |
+| `POST` | `/api/checkout` | Create locked checkout session from selected product |
+| `GET` | `/api/checkout/[id]` | Retrieve checkout session and status |
+| `POST` | `/api/checkout/[id]/prepare-payment` | Validate wallet + prepare MagicBlock private payment |
+| `POST` | `/api/checkout/[id]/submit-payment` | Accept signed transaction and submit to devnet |
+| `GET` | `/api/checkout/[id]/receipt` | Return payment receipt / order confirmation |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+- A Solana wallet (Phantom or Backpack) set to **Devnet**
+
+### Installation
 
 ```bash
+# Clone the repo
+git clone https://github.com/gilfoyleab/Shopifie.ai.git
+cd Shopifie.ai
+
+# Install dependencies
 npm install
 ```
 
-Run the app:
+### Environment Variables
+
+Create a `.env.local` file in the root:
+
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+SERPAPI_API_KEY=your_serpapi_key
+NEXT_PUBLIC_ER_RPC_URL=https://devnet-us.magicblock.app
+NEXT_PUBLIC_TEE_RPC_URL=https://devnet-tee.magicblock.app
+```
+
+### Run Locally
 
 ```bash
 npm run dev
 ```
 
-Run backend tests:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Other Commands
 
 ```bash
+# Run backend tests
 npm test
-```
 
-Run the bike checkout simulation:
-
-```bash
+# Simulate a devnet checkout
 npm run simulate:bike
-```
 
-Create or reuse a local demo merchant wallet:
-
-```bash
+# Create/reuse demo merchant wallet
 npm run wallet:merchant
-```
 
-Check merchant and buyer devnet balances:
-
-```bash
+# Check devnet balances
 npm run wallet:balances -- --buyer=<BUYER_PUBKEY>
 ```
 
-Environment variables currently used:
+---
 
-```env
-GOOGLE_GENERATIVE_AI_API_KEY=...
-SERPAPI_API_KEY=...
-```
+## 🗺️ Roadmap
 
-More environment variables will be added when wallet and MagicBlock payment flows are wired in.
+### ✅ V1 — Consumer Concierge MVP *(Current)*
+- [x] AI-powered product discovery with streaming chat
+- [x] Real-time search via SerpAPI
+- [x] Product cards with "Buy via Agent" flow
+- [x] Solana wallet integration (Phantom/Backpack)
+- [x] MagicBlock devnet checkout + TEE escrow payment
+- [x] Payment receipts with Solscan explorer links
+- [x] Investor pitch deck
+- [x] Live deployment on Vercel
 
-## Working Rule
+### 🔨 V2 — Merchant Partner Network *(Next)*
+- [ ] Merchant Dashboard for partner onboarding
+- [ ] Direct API integrations with hotel chains & e-commerce platforms
+- [ ] Production TEE escrow smart contract (Anchor) on mainnet
+- [ ] Real USDC settlement with dispute resolution
+- [ ] Onboard first 50 curated merchant partners
 
-This README is the current source of truth for:
-- what the MVP is
-- what stage we are in
-- what we are building next
-- what is intentionally out of scope
+### 🌐 V3 — Agent-to-Agent (A2A) Economy *(Future)*
+- [ ] B2B agent-to-agent payment rails
+- [ ] Autonomous AI agents hiring other AI agents via Buybird escrow
+- [ ] Machine-to-machine commerce settlement layer
+- [ ] Cross-agent discovery and negotiation protocol
 
-If the product direction changes, this file should be updated first.
+---
+
+## 🧪 MVP Status
+
+| Feature | Status |
+|---|---|
+| Product search from live data | ✅ |
+| Gemini chat with tool calling | ✅ |
+| Product result cards | ✅ |
+| Internal checkout sessions | ✅ |
+| Devnet wallet connection | ✅ |
+| MagicBlock payment preparation | ✅ |
+| Wallet signing | ✅ |
+| Devnet transaction submission | ✅ |
+| Payment receipts | ✅ |
+| Failed payment recovery UX | 🔜 |
+
+---
+
+## 🔒 Security Model
+
+- **Wallet stays sovereign** — The AI agent never has direct access to user funds
+- **Escrow-first** — Payments are locked in TEE escrow before merchant settlement
+- **Privacy by design** — MagicBlock TEE ensures wallet addresses and amounts are hidden from the public ledger
+- **Controlled approval boundary** — The user wallet is always the final signer
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Feel free to:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ on Solana</strong><br/>
+  <em>Powered by MagicBlock TEE · Google Gemini · Vercel</em>
+</p>
