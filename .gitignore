@@ -11,3 +11,4 @@ pnpm-debug.log*
 .wallets
 .env.local
 tsconfig.tsbuildinfo
+check_keys.mjs
