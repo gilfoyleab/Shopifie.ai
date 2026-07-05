@@ -37,6 +37,10 @@ describe("private transfer flow", () => {
     const preparePayload = await prepareResponse.json();
 
     expect(prepareResponse.status).toBe(200);
+    expect(preparePayload.checkout.mppIntent.profile).toBe("private-mpp");
+    expect(preparePayload.checkout.mppIntent.protocol).toBe("x402");
+    expect(preparePayload.checkout.mppIntent.rail).toBe("magicblock-private-payments");
+    expect(preparePayload.checkout.mppIntent.technicalDesign).toBe("x402-with-private-payment-api");
     expect(preparePayload.checkout.payment.request.visibility).toBe("private");
     expect(preparePayload.checkout.payment.request.mint).toBe(DEVNET_USDC_MINT);
     expect(preparePayload.checkout.payment.request.from).toBe(buyerWallet);
@@ -48,7 +52,7 @@ describe("private transfer flow", () => {
     );
   });
 
-  it("marks the checkout paid when the private transfer submit route runs in simulation mode", async () => {
+  it("marks the checkout paid when the private transfer submit route runs in demo mode", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline private transfer test")));
 
     const createResponse = await createCheckoutPost(
@@ -83,7 +87,8 @@ describe("private transfer flow", () => {
 
     expect(submitResponse.status).toBe(200);
     expect(submitPayload.checkout.status).toBe("paid");
-    expect(submitPayload.checkout.payment.signature).toMatch(/^sim-/);
+    expect(submitPayload.checkout.payment.mode).toBe("demo");
+    expect(submitPayload.checkout.payment.signature).toMatch(/^demo-/);
     expect(submitPayload.receipt.total).toBe(createPayload.checkout.pricing.totalLabel);
   });
 });
