@@ -8,11 +8,16 @@ import {
   DEVNET_USDC_MINT,
   MagicBlockPreparedResponse,
   MagicBlockTransferRequest,
+  PrivateMppIntent,
 } from "@/lib/checkout/types";
 
 const CHECKOUT_TTL_MS = 15 * 60 * 1000;
-const SOLANA_DEVNET_RPC = "https://api.devnet.solana.com";
-const MAGICBLOCK_DEVNET_ROUTER = "https://devnet-router.magicblock.app";
+const SOLANA_DEVNET_RPC = process.env.SOLANA_DEVNET_RPC || "https://api.devnet.solana.com";
+const MAGICBLOCK_DEVNET_ROUTER =
+  process.env.MAGICBLOCK_DEVNET_ROUTER || "https://devnet-router.magicblock.app";
+const MAGICBLOCK_PAYMENTS_API_URL =
+  process.env.MAGICBLOCK_PAYMENTS_API_URL || "https://payments.magicblock.app";
+const MAGICBLOCK_GASLESS_PAYMENTS = process.env.BUYBIRD_GASLESS_PAYMENTS !== "false";
 
 declare global {
   var __buybirdCheckoutStore: Map<string, CheckoutSession> | undefined;
@@ -54,7 +59,15 @@ function parseExtractedPrice(input: CheckoutProductInput) {
 }
 
 function deriveDemoSettlementUiAmount() {
-  const min = 0.2;
+  const fixedAmount = process.env.BUYBIRD_SETTLEMENT_UI_AMOUNT
+    ? Number.parseFloat(process.env.BUYBIRD_SETTLEMENT_UI_AMOUNT)
+    : null;
+
+  if (fixedAmount && Number.isFinite(fixedAmount) && fixedAmount > 0) {
+    return Math.round(fixedAmount * 100) / 100;
+  }
+
+  const min = MAGICBLOCK_GASLESS_PAYMENTS ? 0.5 : 0.2;
   const max = 2;
   const randomValue = Math.random() * (max - min) + min;
   return Math.round(randomValue * 100) / 100;
@@ -67,6 +80,34 @@ function toAtomicAmount(uiAmount: number) {
 function makeNumericRefId() {
   const seed = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
   return seed.slice(-12);
+}
+
+function buildPrivateMppIntent(params: {
+  checkoutId: string;
+  productTitle: string;
+  merchantWallet: string;
+  settlementMint: string;
+  settlementAtomicAmount: number;
+  settlementLabel: string;
+  clientRefId: string;
+}): PrivateMppIntent {
+  return {
+    profile: "private-mpp",
+    protocol: "x402",
+    rail: "magicblock-private-payments",
+    privacyLayer: "per",
+    erUsage: "payment-on-per-with-private-payment-api",
+    technicalDesign: "x402-with-private-payment-api",
+    paymentType: "spl-transfer",
+    resource: `buybird://checkout/${params.checkoutId}`,
+    description: `Private MPP payment for ${params.productTitle}`,
+    network: "solana-devnet",
+    merchantWallet: params.merchantWallet,
+    mint: params.settlementMint,
+    amount: params.settlementAtomicAmount,
+    amountLabel: params.settlementLabel,
+    clientRefId: params.clientRefId,
+  };
 }
 
 function ensureCheckoutIsFresh(session: CheckoutSession) {
@@ -82,6 +123,10 @@ export function createCheckoutSession(product: CheckoutProductInput) {
   const settlementUiAmount = deriveDemoSettlementUiAmount();
   const settlementAtomicAmount = toAtomicAmount(settlementUiAmount);
   const checkoutId = crypto.randomUUID();
+  const clientRefId = makeNumericRefId();
+  const merchantWallet = process.env.BUYBIRD_DEMO_MERCHANT_WALLET || DEFAULT_DEMO_MERCHANT_WALLET;
+  const settlementMint = process.env.BUYBIRD_SETTLEMENT_MINT || DEVNET_USDC_MINT;
+  const settlementLabel = `${settlementUiAmount.toFixed(2)} dUSDC`;
 
   const session: CheckoutSession = {
     id: checkoutId,
@@ -103,26 +148,38 @@ export function createCheckoutSession(product: CheckoutProductInput) {
     },
     pricing: {
       merchantPriceLabel: String(product.price ?? "View merchant price"),
-      demoSettlementLabel: `${settlementUiAmount.toFixed(2)} dUSDC`,
+      demoSettlementLabel: settlementLabel,
       settlementAtomicAmount,
       settlementUiAmount,
-      settlementMint: DEVNET_USDC_MINT,
+      settlementMint,
       settlementSymbol: "dUSDC",
       shippingLabel: "Calculated off-platform",
       feeLabel: "0.00 dUSDC",
-      totalLabel: `${settlementUiAmount.toFixed(2)} dUSDC`,
+      totalLabel: settlementLabel,
     },
     merchant: {
       label: "Buybird Demo Merchant",
-      wallet: process.env.BUYBIRD_DEMO_MERCHANT_WALLET || DEFAULT_DEMO_MERCHANT_WALLET,
+      wallet: merchantWallet,
       network: "devnet",
     },
+    mppIntent: buildPrivateMppIntent({
+      checkoutId,
+      productTitle: product.title,
+      merchantWallet,
+      settlementMint,
+      settlementAtomicAmount,
+      settlementLabel,
+      clientRefId,
+    }),
     note:
-      "This checkout preserves the real product listing while settling a capped devnet demo amount through Buybird's internal merchant flow.",
+      "This checkout creates an x402-style Private MPP intent and prepares a MagicBlock Private Payments API transfer for wallet approval.",
     payment: {
       customerWallet: null,
-      clientRefId: makeNumericRefId(),
+      clientRefId,
       mode: null,
+      protocol: "x402",
+      rail: "magicblock-private-payments",
+      privacyLayer: "per",
       preparedAt: null,
       submittedAt: null,
       confirmedAt: null,
@@ -162,8 +219,8 @@ export function getPaymentRpcUrl(sendTo: "base" | "ephemeral" | undefined) {
   return sendTo === "ephemeral" ? MAGICBLOCK_DEVNET_ROUTER : SOLANA_DEVNET_RPC;
 }
 
-export function createSimulatedSignature(checkoutId: string) {
-  return `sim-${checkoutId.slice(0, 8)}-${Date.now()}`;
+export function createDemoSignature(checkoutId: string) {
+  return `demo-${checkoutId.slice(0, 8)}-${Date.now()}`;
 }
 
 export async function resolveReceiverSettlementDetails(
@@ -212,34 +269,37 @@ export async function resolveReceiverSettlementDetails(
 }
 
 export function buildMagicBlockTransferRequest(session: CheckoutSession, customerWallet: string): MagicBlockTransferRequest {
-  return {
+  const request: MagicBlockTransferRequest = {
     from: customerWallet,
-    to: session.merchant.wallet,
-    mint: session.pricing.settlementMint,
-    amount: session.pricing.settlementAtomicAmount,
+    to: session.mppIntent.merchantWallet,
+    mint: session.mppIntent.mint,
+    amount: session.mppIntent.amount,
     visibility: "private",
     fromBalance: "base",
     toBalance: "base",
     cluster: "devnet",
-    initIfMissing: true,
-    initAtasIfMissing: true,
+    initIfMissing: !MAGICBLOCK_GASLESS_PAYMENTS,
+    initAtasIfMissing: !MAGICBLOCK_GASLESS_PAYMENTS,
     initVaultIfMissing: false,
-    memo: `Buybird checkout ${session.id}`,
     minDelayMs: "0",
     maxDelayMs: "0",
     clientRefId: session.payment.clientRefId,
     split: 1,
-    gasless: false,
-    legacy: true,
+    gasless: MAGICBLOCK_GASLESS_PAYMENTS,
   };
+
+  if (!MAGICBLOCK_GASLESS_PAYMENTS) {
+    request.memo = `Private MPP x402 ${session.payment.clientRefId}`;
+  }
+
+  return request;
 }
 
 export async function prepareMagicBlockPayment(session: CheckoutSession, customerWallet: string) {
   const request = buildMagicBlockTransferRequest(session, customerWallet);
-  const apiBaseUrl = process.env.MAGICBLOCK_PAYMENTS_API_URL || "https://payments.magicblock.app";
 
   try {
-    const response = await fetch(`${apiBaseUrl}/v1/spl/transfer`, {
+    const response = await fetch(`${MAGICBLOCK_PAYMENTS_API_URL}/v1/spl/transfer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -262,14 +322,15 @@ export async function prepareMagicBlockPayment(session: CheckoutSession, custome
     };
   } catch (error) {
     return {
-      mode: "simulated" as const,
+      mode: "demo" as const,
       request,
       response: {
         kind: "transfer",
-        version: "legacy",
+        version: "v0",
         sendTo: "base",
         instructionCount: 1,
         requiredSigners: [customerWallet],
+        demo: true,
       } satisfies MagicBlockPreparedResponse,
       error: error instanceof Error ? error.message : "Failed to prepare MagicBlock payment.",
     };
@@ -294,12 +355,12 @@ export async function submitPreparedPayment(
 
   if (
     options.simulate ||
-    session.payment.mode === "simulated" ||
+    session.payment.mode === "demo" ||
     !preparedResponse.transactionBase64
   ) {
     return {
-      mode: "simulated" as const,
-      signature: createSimulatedSignature(session.id),
+      mode: "demo" as const,
+      signature: createDemoSignature(session.id),
       rpcUrl,
       submittedAt,
       confirmedAt: new Date().toISOString(),

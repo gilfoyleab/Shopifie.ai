@@ -55,6 +55,24 @@ export type DemoMerchant = {
   network: "devnet";
 };
 
+export type PrivateMppIntent = {
+  profile: "private-mpp";
+  protocol: "x402";
+  rail: "magicblock-private-payments";
+  privacyLayer: "per";
+  erUsage: "payment-on-per-with-private-payment-api";
+  technicalDesign: "x402-with-private-payment-api";
+  paymentType: "spl-transfer";
+  resource: string;
+  description: string;
+  network: "solana-devnet";
+  merchantWallet: string;
+  mint: string;
+  amount: number;
+  amountLabel: string;
+  clientRefId: string;
+};
+
 export type MagicBlockTransferRequest = {
   from: string;
   to: string;
@@ -64,16 +82,16 @@ export type MagicBlockTransferRequest = {
   fromBalance: "base";
   toBalance: "base";
   cluster: "devnet";
-  initIfMissing: true;
-  initAtasIfMissing: true;
+  initIfMissing: boolean;
+  initAtasIfMissing: boolean;
   initVaultIfMissing: false;
-  memo: string;
+  memo?: string;
   minDelayMs: "0";
   maxDelayMs: "0";
   clientRefId: string;
   split: 1;
-  gasless: false;
-  legacy: true;
+  gasless: boolean;
+  legacy?: boolean;
 };
 
 export type MagicBlockPreparedResponse = {
@@ -86,12 +104,16 @@ export type MagicBlockPreparedResponse = {
   instructionCount?: number;
   requiredSigners?: string[];
   validator?: string;
+  demo?: boolean;
 };
 
 export type CheckoutPaymentState = {
   customerWallet: string | null;
   clientRefId: string;
-  mode: "live" | "simulated" | null;
+  mode: "live" | "demo" | null;
+  protocol: "x402";
+  rail: "magicblock-private-payments";
+  privacyLayer: "per";
   preparedAt: string | null;
   submittedAt: string | null;
   confirmedAt: string | null;
@@ -113,6 +135,7 @@ export type CheckoutSession = {
   product: CheckoutProductSnapshot;
   pricing: CheckoutPricing;
   merchant: DemoMerchant;
+  mppIntent: PrivateMppIntent;
   note: string;
   payment: CheckoutPaymentState;
 };
