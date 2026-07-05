@@ -2,14 +2,14 @@
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" />
   <img src="https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=next.js&logoColor=white" />
   <img src="https://img.shields.io/badge/AI-Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Payments-MagicBlock_TEE-10B981?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Payments-Private_MPP-10B981?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Status-Live_MVP-22c55e?style=for-the-badge" />
 </p>
 
 <h1 align="center">🐦 Buybird</h1>
 
 <p align="center">
-  <strong>The Private Web3 Concierge — AI-Powered Shopping with TEE Escrow on Solana</strong>
+  <strong>Private MPP — x402 Agent Payments with MagicBlock Private Payment API</strong>
 </p>
 
 <p align="center">
@@ -26,11 +26,11 @@
 
 ## 🧠 What is Buybird?
 
-Buybird is an **AI-powered shopping concierge** that finds products and books services from a curated partner network, then completes **private stablecoin payments** through **MagicBlock TEE (Trusted Execution Environment) escrow** on Solana.
+Buybird is an **AI-powered shopping concierge** and **Private MPP** prototype. It lets agents privately transact with merchants by combining an x402-style payment negotiation layer with MagicBlock's Private Payment API on PER.
 
 > **Think of it as:** Your personal AI shopper that pays in crypto — privately, securely, and with zero chargebacks.
 
-Users simply chat with the Buybird AI, describe what they need, and the agent handles everything — from discovery to private checkout — all without exposing wallet addresses or transaction details on the public ledger.
+Users simply chat with the Buybird AI, describe what they need, and the agent handles everything from discovery to private checkout. The payment path is designed for crypto users who earn and spend through agents while keeping merchant payments private.
 
 ---
 
@@ -51,13 +51,24 @@ Users simply chat with the Buybird AI, describe what they need, and the agent ha
 Buybird connects crypto users with a **curated network of crypto-friendly merchants** through an AI concierge:
 
 ```
-User Prompt → AI Search → Partner Results → USDC Payment → TEE Escrow → Private Settlement
+User Prompt → AI Search → Partner Results → x402 Payment Required → MagicBlock Private Payment API → PER Settlement
 ```
 
 - **For Users:** Chat with the AI. It finds exactly what you need from our partner network.
-- **For Payments:** Pay in USDC. Funds are locked in a MagicBlock TEE Escrow.
-- **For Privacy:** Wallet addresses and transaction details remain entirely private from the public ledger.
+- **For Payments:** Pay in USDC through a Private MPP intent.
+- **For Privacy:** The payment rail uses MagicBlock Private Payment API on PER.
 - **For Merchants:** Zero chargebacks, instant USDC settlement, simple onboarding.
+
+### Private MPP Implementation Status
+
+| Requirement | Current Status |
+|---|---|
+| Agents privately transact with merchants | Implemented for the Buybird demo merchant checkout flow |
+| x402 with Private Payment API | Implemented with `@x402/next`, `@x402/core`, and `@x402/svm`; `/api/checkout/[id]/protected` is Solana x402-protected and `/api/checkout/[id]/x402` exposes checkout discovery metadata |
+| Payment on PER with Private Payment API | Implemented and devnet-verified through MagicBlock's Private Payment API returning signed `v0` transfer payloads |
+| Fast and gasless | Implemented for approved devnet stablecoin mints at MagicBlock's gasless minimum of `0.5` USDC/USDT |
+| Compliant privacy on PER | PER-targeted payment intent is implemented; production compliance policy is not implemented yet |
+| Marketplace connections like Amazon, Airbnb, Shopify, Nomadz | Not implemented yet; current app uses live shopping search plus a demo merchant payment rail |
 
 ---
 
@@ -83,8 +94,8 @@ User Prompt → AI Search → Partner Results → USDC Payment → TEE Escrow �
                        │
 ┌──────────────────────▼──────────────────────────────────┐
 │                  PAYMENT LAYER                          │
-│  MagicBlock TEE Escrow · Solana Devnet                   │
-│  Private Transfers · USDC Settlement                     │
+│  x402 Negotiation · MagicBlock Private Payment API       │
+│  Payment on PER · Private USDC Settlement                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -101,17 +112,17 @@ The AI agent searches the partner network and returns curated, ranked results.
 ### 2. 🛍️ Select
 The user reviews product cards with real pricing and clicks **"Buy via Agent"** to initiate checkout.
 
-### 3. 🔒 Escrow
-The backend creates a checkout session and locks the item, amount, merchant destination, and expiry. MagicBlock builds an unsigned private payment transaction.
+### 3. x402 Payment Required
+The backend creates a Private MPP intent and exposes an x402-style `402 Payment Required` response with the amount, merchant destination, asset, and MagicBlock Private Payment API rail metadata.
 
-### 4. ✍️ Sign
-The user's wallet (Phantom/Backpack) signs the prepared transaction. The AI never has direct access to funds.
+### 4. Private Payment API
+The app asks MagicBlock's Private Payment API to prepare a private SPL transfer for the selected merchant payment.
 
-### 5. 🔐 Private Settlement
-The signed transaction is submitted on Solana devnet. MagicBlock's TEE ensures the transfer is **completely private** — no wallet addresses or amounts visible on the public ledger.
+### 5. Sign and Submit
+The user's wallet signs the prepared transaction. The signed transaction is submitted to the target returned by MagicBlock, including PER/ephemeral routing when provided.
 
-### 6. ✅ Receipt
-The app confirms payment with a full receipt including Solscan explorer links.
+### 6. Receipt
+The app confirms the Private MPP flow with a receipt. Demo receipts are clearly marked as demo; live receipts include transaction details.
 
 ---
 
@@ -123,7 +134,7 @@ The app confirms payment with a full receipt including Solscan explorer links.
 | **AI Engine** | Google Gemini via Vercel AI SDK |
 | **Search** | SerpAPI + Google Shopping |
 | **Wallet** | Solana Wallet Adapter (Phantom, Backpack) |
-| **Payments** | MagicBlock TEE Private Transfers |
+| **Payments** | x402 with MagicBlock Private Payment API |
 | **Network** | Solana Devnet |
 | **Deployment** | Vercel |
 | **Styling** | Custom CSS (no Tailwind) |
@@ -137,7 +148,9 @@ The app confirms payment with a full receipt including Solscan explorer links.
 | `POST` | `/api/chat` | Gemini AI orchestration + search tool invocation |
 | `POST` | `/api/checkout` | Create locked checkout session from selected product |
 | `GET` | `/api/checkout/[id]` | Retrieve checkout session and status |
-| `POST` | `/api/checkout/[id]/prepare-payment` | Validate wallet + prepare MagicBlock private payment |
+| `GET` | `/api/checkout/[id]/x402` | Return Private MPP discovery metadata and links |
+| `GET` | `/api/checkout/[id]/protected` | Solana x402-protected merchant action; requires a valid `X-PAYMENT` payload |
+| `POST` | `/api/checkout/[id]/prepare-payment` | Validate wallet + prepare MagicBlock Private Payment API transfer |
 | `POST` | `/api/checkout/[id]/submit-payment` | Accept signed transaction and submit to devnet |
 | `GET` | `/api/checkout/[id]/receipt` | Return payment receipt / order confirmation |
 
@@ -169,8 +182,11 @@ Create a `.env.local` file in the root:
 ```env
 GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 SERPAPI_API_KEY=your_serpapi_key
-NEXT_PUBLIC_ER_RPC_URL=https://devnet-us.magicblock.app
-NEXT_PUBLIC_TEE_RPC_URL=https://devnet-tee.magicblock.app
+MAGICBLOCK_PAYMENTS_API_URL=https://payments.magicblock.app
+MAGICBLOCK_DEVNET_ROUTER=https://devnet-router.magicblock.app
+SOLANA_DEVNET_RPC=https://api.devnet.solana.com
+X402_FACILITATOR_URL=https://facilitator.payai.network
+BUYBIRD_GASLESS_PAYMENTS=true
 ```
 
 ### Run Locally
@@ -206,7 +222,10 @@ npm run wallet:balances -- --buyer=<BUYER_PUBKEY>
 - [x] Real-time search via SerpAPI
 - [x] Product cards with "Buy via Agent" flow
 - [x] Solana wallet integration (Phantom/Backpack)
-- [x] MagicBlock devnet checkout + TEE escrow payment
+- [x] Private MPP intent for agent-to-merchant payments
+- [x] Solana x402 payment-required endpoint
+- [x] MagicBlock Private Payment API preparation
+- [x] Gasless PER devnet settlement
 - [x] Payment receipts with Solscan explorer links
 - [x] Investor pitch deck
 - [x] Live deployment on Vercel
@@ -214,7 +233,7 @@ npm run wallet:balances -- --buyer=<BUYER_PUBKEY>
 ### 🔨 V2 — Merchant Partner Network *(Next)*
 - [ ] Merchant Dashboard for partner onboarding
 - [ ] Direct API integrations with hotel chains & e-commerce platforms
-- [ ] Production TEE escrow smart contract (Anchor) on mainnet
+- [ ] Production PER settlement and merchant reconciliation
 - [ ] Real USDC settlement with dispute resolution
 - [ ] Onboard first 50 curated merchant partners
 
@@ -235,7 +254,8 @@ npm run wallet:balances -- --buyer=<BUYER_PUBKEY>
 | Product result cards | ✅ |
 | Internal checkout sessions | ✅ |
 | Devnet wallet connection | ✅ |
-| MagicBlock payment preparation | ✅ |
+| x402-style payment requirement | ✅ |
+| MagicBlock Private Payment API preparation | ✅ |
 | Wallet signing | ✅ |
 | Devnet transaction submission | ✅ |
 | Payment receipts | ✅ |
@@ -246,8 +266,8 @@ npm run wallet:balances -- --buyer=<BUYER_PUBKEY>
 ## 🔒 Security Model
 
 - **Wallet stays sovereign** — The AI agent never has direct access to user funds
-- **Escrow-first** — Payments are locked in TEE escrow before merchant settlement
-- **Privacy by design** — MagicBlock TEE ensures wallet addresses and amounts are hidden from the public ledger
+- **x402-first** — Agents receive a payment-required response before protected merchant checkout proceeds
+- **Privacy by design** — Merchant payments are prepared through MagicBlock Private Payment API on PER
 - **Controlled approval boundary** — The user wallet is always the final signer
 
 ---
@@ -272,5 +292,5 @@ This project is open source and available under the [MIT License](LICENSE).
 
 <p align="center">
   <strong>Built with ❤️ on Solana</strong><br/>
-  <em>Powered by MagicBlock TEE · Google Gemini · Vercel</em>
+  <em>Powered by MagicBlock Private Payment API · Google Gemini · Vercel</em>
 </p>
