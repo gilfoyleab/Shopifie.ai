@@ -1,7 +1,7 @@
 {
   "name": "shopping-agent-mvp",
   "version": "1.0.0",
-  "description": "An agentic shopping MVP that helps a user discover products, verify real offers, compare options, and complete a private payment flow on MagicBlock devnet with explicit user confirmation.",
+  "description": "A Private MPP MVP for agent-to-merchant payments using x402-style negotiation with MagicBlock Private Payment API on PER.",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,6 +11,7 @@
     "test": "vitest run",
     "simulate:bike": "tsx scripts/simulate-bike-checkout.ts",
     "test:private-transfer": "tsx scripts/test-private-transfer-flow.ts",
+    "test:x402-e2e": "tsx scripts/run-solana-x402-e2e.ts",
     "wallet:merchant": "tsx scripts/create-demo-merchant-wallet.ts",
     "wallet:balances": "tsx scripts/check-devnet-wallet-balances.ts"
   },
@@ -21,6 +22,9 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
     "@ai-sdk/react": "^3.0.197",
+    "@solana/kit": "^5.5.1",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/sysvars": "^7.0.0",
     "@solana/wallet-adapter-backpack": "^0.1.14",
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-phantom": "^0.9.29",
@@ -28,6 +32,10 @@
     "@solana/wallet-adapter-react-ui": "^0.9.39",
     "@solana/wallet-adapter-solflare": "^0.6.33",
     "@solana/web3.js": "^1.98.4",
+    "@x402/core": "^2.17.0",
+    "@x402/fetch": "^2.17.0",
+    "@x402/next": "^2.17.0",
+    "@x402/svm": "^2.17.0",
     "ai": "^6.0.195",
     "lucide-react": "^1.17.0",
     "next": "^16.2.7",
