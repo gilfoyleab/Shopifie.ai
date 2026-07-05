@@ -6,7 +6,7 @@ import { SolanaProvider } from "@/components/solana-provider";
 export const metadata: Metadata = {
   title: "Buybird",
   description:
-    "A focused shopping agent MVP with product discovery, verification, checkout state, and MagicBlock private payments on devnet.",
+    "A Private MPP MVP for agent-to-merchant payments using x402-style negotiation with MagicBlock Private Payment API on PER.",
 };
 
 export default function RootLayout({
