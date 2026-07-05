@@ -87,6 +87,10 @@ function getTransactionExplorerUrl(signature: string) {
   return `https://solscan.io/tx/${signature}?cluster=devnet`;
 }
 
+function isDemoReceipt(receipt: Record<string, unknown> | null) {
+  return receipt?.mode === "demo";
+}
+
 function getAccountExplorerUrl(address: string) {
   return `https://solscan.io/account/${address}?cluster=devnet`;
 }
@@ -155,6 +159,7 @@ export default function Home() {
   const receiverExplorer = getReceiverExplorerConfig(checkoutSession, checkoutReceipt);
   const settlementTokenLabel = getSettlementTokenLabel(checkoutSession?.pricing.settlementSymbol);
   const isPaymentComplete = checkoutSession?.status === "paid" && Boolean(checkoutReceipt);
+  const isDemoPaymentComplete = isDemoReceipt(checkoutReceipt);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
   const handleSubmit = (e: React.FormEvent) => {
@@ -201,7 +206,7 @@ export default function Home() {
 
       setCheckoutSession(data.checkout as CheckoutSession);
       setCheckoutNotice(
-        "Your item is locked in checkout. Next, prepare the private payment request, then approve it in Phantom.",
+        "Private MPP intent is locked. Next, prepare the x402 payment with MagicBlock, then approve it in Phantom.",
       );
     } catch (checkoutCreationError) {
       setCheckoutError(
@@ -243,11 +248,11 @@ export default function Home() {
 
       setCheckoutSession(data.checkout as CheckoutSession);
 
-      const prepMode = data?.prepared?.mode === "live" ? "live" : "simulated";
+      const prepMode = data?.prepared?.mode === "live" ? "live" : "demo";
       setCheckoutNotice(
         prepMode === "live"
-          ? "Private payment is prepared. The next step is to approve the transaction in Phantom."
-          : "Private payment request is prepared in demo mode. You can still complete the flow and view the receipt.",
+          ? "MagicBlock prepared the private x402 transfer. Approve it in Phantom to submit."
+          : "MagicBlock preparation fell back to demo mode. You can still walk through the MPP flow, but it will not be a live private settlement.",
       );
     } catch (paymentPreparationError) {
       setCheckoutError(
@@ -268,17 +273,17 @@ export default function Home() {
     setIsSubmittingPayment(true);
 
     try {
-      const isSimulatedPrep =
-        checkoutSession.payment.mode === "simulated" ||
+      const isDemoPrep =
+        checkoutSession.payment.mode === "demo" ||
         !checkoutSession.payment.response?.transactionBase64;
 
-      if (!isSimulatedPrep && !signTransaction) {
+      if (!isDemoPrep && !signTransaction) {
         throw new Error("This wallet does not support transaction signing.");
       }
 
       let signedTransactionBase64: string | undefined;
 
-      if (!isSimulatedPrep) {
+      if (!isDemoPrep) {
         const unsignedTransaction = decodePreparedTransaction(checkoutSession);
 
         if (!unsignedTransaction) {
@@ -304,7 +309,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           signedTransactionBase64,
-          simulate: isSimulatedPrep,
+          simulate: isDemoPrep,
         }),
       });
 
@@ -573,7 +578,7 @@ export default function Home() {
           <div className="checkout-backdrop" onClick={resetCheckoutState} />
           <aside className="checkout-sidebar">
             <div className="checkout-header">
-              <h3>Secure Checkout</h3>
+              <h3>Private MPP</h3>
               <button className="close-btn" onClick={resetCheckoutState}>
                 <X size={20} />
               </button>
@@ -626,7 +631,7 @@ export default function Home() {
               </div>
               <div className="detail-divider" />
               <div className="detail-row total">
-                <span>Devnet Test Settlement</span>
+                <span>x402 Settlement</span>
                 <span>{getSettlementTotalLabel(checkoutSession)}</span>
               </div>
 
@@ -661,12 +666,16 @@ export default function Home() {
               {checkoutSession?.payment.request && !isPaymentComplete && (
                 <div className="payment-preview">
                   <div className="payment-preview-row">
-                    <span>Payment route</span>
-                    <strong>{checkoutSession.payment.mode === "live" ? "Private transfer" : "Demo transfer"}</strong>
+                    <span>Payment rail</span>
+                    <strong>{checkoutSession.payment.mode === "live" ? "MagicBlock Private API" : "Demo MPP flow"}</strong>
+                  </div>
+                  <div className="payment-preview-row">
+                    <span>Protocol</span>
+                    <strong>{checkoutSession.mppIntent.protocol.toUpperCase()} / PER</strong>
                   </div>
                   <div className="payment-preview-row">
                     <span>Network</span>
-                    <strong>Solana devnet</strong>
+                    <strong>{checkoutSession.mppIntent.network}</strong>
                   </div>
                   <div className="payment-preview-row">
                     <span>Merchant destination</span>
@@ -710,9 +719,9 @@ export default function Home() {
                     {isCreatingCheckout
                       ? "Creating checkout..."
                       : isPreparingPayment
-                        ? "Preparing private payment..."
+                        ? "Preparing MagicBlock payment..."
                         : connected
-                          ? "1. Prepare Private Payment"
+                          ? "1. Prepare x402 Private Payment"
                           : "Connect wallet to continue"}
                   </button>
                   <button
@@ -729,21 +738,21 @@ export default function Home() {
                   >
                     {isSubmittingPayment
                       ? "Approving and sending..."
-                      : checkoutSession?.payment.mode === "simulated" ||
+                      : checkoutSession?.payment.mode === "demo" ||
                           !checkoutSession?.payment.response?.transactionBase64
-                        ? "2. Complete Demo Payment"
-                        : "2. Buy Now in Phantom"}
+                        ? "2. Complete Demo MPP"
+                        : "2. Approve in Phantom"}
                   </button>
                 </>
               ) : (
                 <div className="payment-preview">
                   <div className="payment-preview-row">
                     <span>Payment status</span>
-                    <strong>Sent</strong>
+                    <strong>{isDemoPaymentComplete ? "Demo complete" : "Sent"}</strong>
                   </div>
                   <div className="payment-preview-row">
-                    <span>Network</span>
-                    <strong>Solana devnet</strong>
+                    <span>Rail</span>
+                    <strong>MagicBlock Private Payments</strong>
                   </div>
                   <div className="payment-preview-row">
                     <span>Asset</span>
@@ -755,7 +764,7 @@ export default function Home() {
               {checkoutNotice && <p className="checkout-alert success-text">{checkoutNotice}</p>}
               {!isPaymentComplete && (
                 <p className="checkout-note">
-                  <Sparkles size={12} /> Step 1 prepares the transfer. Step 2 asks your wallet to approve and send it.
+                  <Sparkles size={12} /> Step 1 asks MagicBlock to build the private transfer. Step 2 signs and submits the returned transaction.
                 </p>
               )}
             </div>
@@ -764,7 +773,7 @@ export default function Home() {
               <div className="checkout-success-layer" role="dialog" aria-modal="true" aria-labelledby="success-title">
                 <div className="checkout-success-card">
                   <div className="checkout-success-top">
-                    <span className="meta-pill">transfer sent</span>
+                    <span className="meta-pill">{isDemoPaymentComplete ? "demo mpp" : "transfer sent"}</span>
                     <button
                       type="button"
                       className="close-btn"
@@ -774,9 +783,13 @@ export default function Home() {
                       <X size={18} />
                     </button>
                   </div>
-                  <h4 id="success-title" className="receipt-title">Private payment sent successfully</h4>
+                  <h4 id="success-title" className="receipt-title">
+                    {isDemoPaymentComplete ? "Private MPP demo completed" : "Private payment sent successfully"}
+                  </h4>
                   <p className="checkout-helper checkout-helper-tight">
-                    Your wallet approved the MagicBlock private transfer and the devnet transaction is now recorded.
+                    {isDemoPaymentComplete
+                      ? "The x402/MagicBlock flow completed in demo mode because no live unsigned transaction was available."
+                      : "Your wallet approved the MagicBlock private transfer and the devnet transaction is now recorded."}
                   </p>
                   <div className="checkout-success-grid">
                     <div className="checkout-success-row">
@@ -788,8 +801,12 @@ export default function Home() {
                       <strong>{String(checkoutReceipt.status)}</strong>
                     </div>
                     <div className="checkout-success-row">
-                      <span>Network</span>
-                      <strong>Solana devnet</strong>
+                      <span>Protocol</span>
+                      <strong>x402 / PER</strong>
+                    </div>
+                    <div className="checkout-success-row">
+                      <span>Rail</span>
+                      <strong>MagicBlock Private API</strong>
                     </div>
                     <div className="checkout-success-row">
                       <span>Asset used</span>
@@ -809,26 +826,30 @@ export default function Home() {
                     </div>
                     <div className="checkout-success-row">
                       <span>Merchant destination</span>
-                      <strong>Private transfer completed</strong>
+                      <strong>{isDemoPaymentComplete ? "Demo merchant intent" : "Private transfer completed"}</strong>
                     </div>
                   </div>
                   <div className="receipt-links">
-                    <a
-                      href={getTransactionExplorerUrl(String(checkoutReceipt.signature))}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="receipt-link"
-                    >
-                      Open transaction on Solscan
-                    </a>
-                    <a
-                      href={receiverExplorer.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="receipt-link"
-                    >
-                      {receiverExplorer.label}
-                    </a>
+                    {!isDemoPaymentComplete && (
+                      <>
+                        <a
+                          href={getTransactionExplorerUrl(String(checkoutReceipt.signature))}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="receipt-link"
+                        >
+                          Open transaction on Solscan
+                        </a>
+                        <a
+                          href={receiverExplorer.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="receipt-link"
+                        >
+                          {receiverExplorer.label}
+                        </a>
+                      </>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -838,7 +859,9 @@ export default function Home() {
                     Done
                   </button>
                   <p className="checkout-helper checkout-helper-tight">
-                    This screen is showing proof that your payment was sent. The second Solscan link opens the merchant&apos;s receiving token account.
+                    {isDemoPaymentComplete
+                      ? "Connect a funded devnet wallet and a reachable MagicBlock Payments API response to turn this into a live private settlement."
+                      : "This screen is showing proof that your payment was sent. The second Solscan link opens the merchant receiving token account."}
                   </p>
                 </div>
               </div>
